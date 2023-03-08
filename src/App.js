@@ -1,40 +1,50 @@
-import { useState } from 'react';
 import Header from './components/Header';
+import Board from './components/Board';
+import { useState } from 'react';
 
-function Square({value, onSquareclick}) {
-  return <button className="square" onClick={onSquareclick}>{value}</button>
-}
+export default function App() {
+  const [isXNext, setXNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
 
-export default function Board() {
-  const [squares, setSquares] = useState(Array(9).fill(null));
-
-  function handleClick(i) {
-    const nextSquares = squares.split(); //Creating new array using split method
-    nextSquares[i] = 'X';
-    setSquares(nextSquares);
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+    setXNext(!isXNext);
   }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+    setXNext(nextMove % 2 === 0);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Move ' + move;
+    } else {
+      description = 'Start';
+    }
+    return (
+      <li className='border border-white w-20 text-center' key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+  
   return (
-    <>
-      <Header></Header>
-
-      
-      <div className='row flex justify-center'>
-        <Square value={squares[0]} onSquareclick={handleClick(0)}/>
-        <Square value={squares[1]} onSquareclick={handleClick(1)}/>
-        <Square value={squares[2]} onSquareclick={handleClick(2)}/>
-      </div>
-
-      <div className='row flex justify-center'>
-        <Square value={squares[3]} onSquareclick={handleClick(3)}/>
-        <Square value={squares[4]} onSquareclick={handleClick(4)}/>
-        <Square value={squares[5]} onSquareclick={handleClick(5)}/>
-      </div>
-
-      <div className='row flex justify-center'>
-        <Square value={squares[6]} onSquareclick={handleClick(6)}/>
-        <Square value={squares[7]} onSquareclick={handleClick(7)}/>
-        <Square value={squares[8]} onSquareclick={handleClick(8)}/>
-      </div>
-    </>
+  <div>
+    <Header></Header>
+    <div className='flex flex-row align-middle justify-center'>
+    <Board isXNext={isXNext} squares={currentSquares} onPlay={handlePlay}></Board>
+    <div className='flex justify-center ml-20'>
+      <ul>{moves}</ul>
+    </div>
+  </div>
+  </div>
   )
 }
+
+
